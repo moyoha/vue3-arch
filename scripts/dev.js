@@ -2,9 +2,9 @@
 // node dev.js (要打包的名字 -f 打包的格式) === args.slice(2)
 
 import minimist from "minimist";
-import { createRequire } from "module";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { createRequire } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import esbuild from "esbuild";
 
 //node中的命令函参数通过process来获取process.argv
