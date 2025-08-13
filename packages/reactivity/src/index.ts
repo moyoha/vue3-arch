@@ -1,3 +1,2 @@
-import { isEmptyObject } from "@vue/shared";
-
-isEmptyObject(456)
+export * from './effect';
+export * from './reactive';

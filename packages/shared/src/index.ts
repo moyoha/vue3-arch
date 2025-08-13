@@ -1,3 +1,2 @@
-export function isEmptyObject(value: any): boolean {
-  return value !== null && typeof value === 'object';
-}
+export const isObject = (val: unknown): val is Record<any, any> =>
+  val !== null && typeof val === 'object';
