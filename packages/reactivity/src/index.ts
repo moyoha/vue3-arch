@@ -1,3 +1,3 @@
 import { isEmptyObject } from "@vue/shared";
 
-isEmptyObject(123)
+isEmptyObject(456)
