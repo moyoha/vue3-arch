@@ -1,0 +1,23 @@
+// 这个文件会帮我们打包packages下的模块，最终打包出js文件
+// node dev.js (要打包的名字 -f 打包的格式) === args.slice(2)
+
+import minimist from "minimist";
+import { createRequire } from "module";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+
+//node中的命令函参数通过process来获取process.argv
+// process.argv.slice(2) => [ 'reactivity', '-f', 'esm' ]
+// args => { _: [ 'reactivity' ], f: 'esm' }
+const args = minimist(process.argv.slice(2));
+
+// import.meta.url => file:///xxxx, 需要通过 fileURLToPath 转换为普通路径
+const __filename = fileURLToPath(import.meta.url); // 获取当前文件绝对路径
+const __dirname = dirname(__filename); // 获取当前文件所在目录的绝对路径
+const require = createRequire(import.meta.url); // 创建一个 require 函数，用于加载模块
+
+const target = args._[0] || "reactivity"; // 打包那个项目
+const format = args.f || "iife"; // 打包的后的模块化规范
+
+// 入口文件路径, 根据命令行提供的路径来进行解析
+const entry = resolve(__dirname, `../packages/${target}/src/index.ts`);
