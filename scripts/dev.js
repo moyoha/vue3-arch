@@ -28,16 +28,16 @@ const pkg = require(`../packages/${target}/package.json`);
 const entry = resolve(__dirname, `../packages/${target}/src/index.ts`);
 
 esbuild
-    .context({
-        entryPoints: [entry], // 入口
-        outfile: resolve(__dirname, `../packages/${target}/dist/${target}.js`), // 出口
-        bundle: true, // reactivity会依赖其他模块，打包时需要将依赖的模块也打包进去
-        platform: "browser", // 打包后给浏览器使用
-        sourcemap: true,
-        format, // cjs esm iife
-        globalName: pkg.buildOptions?.name
-    })
-    .then((ctx) => {
-      console.log("start dev")
-      return ctx.watch(); // 监控入口文件持续打包
-    })
+  .context({
+    entryPoints: [entry], // 入口
+    outfile: resolve(__dirname, `../packages/${target}/dist/${target}.js`), // 出口
+    bundle: true, // reactivity会依赖其他模块，打包时需要将依赖的模块也打包进去
+    platform: "browser", // 打包后给浏览器使用
+    sourcemap: true,
+    format, // cjs esm iife
+    globalName: pkg.buildOptions?.name
+  })
+  .then((ctx) => {
+    console.log("start dev")
+    return ctx.watch(); // 监控入口文件持续打包
+  })
