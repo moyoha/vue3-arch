@@ -9,13 +9,12 @@ export const mutableHandlers: ProxyHandler<any> = {
       return true;
     }
     track(target, key);
-    // console.log(key, activeEffect);
     return Reflect.get(target, key, receiver);
   },
   set(target: any, key: string, value: any, receiver: any) {
     let oldValue = target[key];
     let result = Reflect.set(target, key, value, receiver);
-    if(oldValue !== value) {
+    if (oldValue !== value) {
       trigger(target, key, value, oldValue);
     }
     return result;

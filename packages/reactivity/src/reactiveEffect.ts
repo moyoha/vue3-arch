@@ -22,7 +22,7 @@ export function track(target, key) {
       }, key));
     }
     trackEffect(activeEffect, dep);
-    console.log(targetMap)
+    console.log(targetMap);
   }
 }
 
@@ -35,8 +35,5 @@ export function trigger(target, key, value, oldValue) {
   if (dep) {
     // 修改的属性对应了 effect
     triggerEffects(dep);
-    dep.forEach(effect => {
-      effect.run();
-    })
   }
 }
