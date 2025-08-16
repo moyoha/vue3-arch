@@ -1,5 +1,4 @@
 import { ReactiveFlags } from "./constans";
-import { activeEffect } from "./effect";
 import { track, trigger } from "./reactiveEffect";
 
 

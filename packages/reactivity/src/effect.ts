@@ -23,9 +23,9 @@ function postCleanEffect(effect) {
 export let activeEffect;
 class ReactiveEffect {
 	public active = true;  // 创建的 effect 是响应式的
-	_trackId = 0; // 用于记录当前 effect 执行的次数
-	deps = [];
-	_depsLength = 0;
+	_trackId = 0; // 记录当前 effect 执行的次数
+	deps = []; // 记录当前 effect 被那些属性依赖
+	_depsLength = 0; // 记录当前 effect 被那些属性依赖的长度
 
 	// fn 用户传入的函数
 	// scheduler 调度函数，fn 中依赖的数据发生变化后需要重新调用 
@@ -37,12 +37,19 @@ class ReactiveEffect {
 			return this.fn();
 		}
 		// 使用局部变量 lastEffect 存储上一个 activeEffect
+		// 解决 effect 嵌套导致 activeEffect 丢失的问题
 		let lastEffect = activeEffect;
 		try {
 			activeEffect = this;
+			// 每次执行都需要 diff 依赖
+			// 因为内部可能存在条件语句，如 obj.flag ? obj.name : obj.age
+			// 若 obj.flag 为 true 时，如果 obj.age 曾被依赖，
+			// 则需要将 obj.age 对应的 effect 从 obj.age 的依赖中移除，反之亦然
 			preCleanEffect(this);
 			return this.fn();
 		} finally {
+			// preCleanEffect 清理完成后，如果上一轮的依赖比本次的依赖更多
+			// 则还存在未被清理的依赖
 			postCleanEffect(this);
 			// 最后将 activeEffect 恢复为上一个 activeEffect
 			activeEffect = lastEffect;
@@ -59,13 +66,14 @@ function cleanDepEffect(dep, effect) {
 
 export function trackEffect(effect, dep) {
 	if (dep.get(effect) !== effect._trackId) {
+		// 记录当前属性依赖的 effect
 		dep.set(effect, effect._trackId); // 更新 id
 		let oldDep = effect.deps[effect._depsLength];
 		if (oldDep !== dep) {
 			if (oldDep) {
 				cleanDepEffect(oldDep, effect);
 			}
-			// 换成新的
+			// 记录当前 effect 被那些属性依赖
 			effect.deps[effect._depsLength++] = dep;
 		} else {
 			effect._depsLength++;
