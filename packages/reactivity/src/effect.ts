@@ -3,7 +3,13 @@ export function effect(fn, options?) {
 		_effect.run();
 	});
 	_effect.run();
-	return _effect;
+	// 让外界可以自己实现调度器
+	if (options) {
+		Object.assign(_effect, options);
+	}
+	const runner = _effect.run.bind(_effect);
+	runner.effect = _effect;
+	return runner; // 让外界可以自己 run
 }
 
 function preCleanEffect(effct) {
