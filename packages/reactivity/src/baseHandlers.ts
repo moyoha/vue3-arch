@@ -1,4 +1,6 @@
+import { isObject } from "@vue/shared";
 import { ReactiveFlags } from "./constans";
+import { reactive } from "./reactive";
 import { track, trigger } from "./reactiveEffect";
 
 
@@ -8,7 +10,11 @@ export const mutableHandlers: ProxyHandler<any> = {
       return true;
     }
     track(target, key);
-    return Reflect.get(target, key, receiver);
+    const res = Reflect.get(target, key, receiver);
+    if (isObject(res)) { // 当取值时对象时，进行递归代理
+      return reactive(res);
+    }
+    return res;
   },
   set(target: any, key: string, value: any, receiver: any) {
     let oldValue = target[key];

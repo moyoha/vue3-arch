@@ -30,8 +30,9 @@ export let activeEffect;
 class ReactiveEffect {
 	public active = true;  // 创建的 effect 是响应式的
 	_trackId = 0; // 记录当前 effect 执行的次数
-	deps = []; // 记录当前 effect 被那些属性依赖
 	_depsLength = 0; // 记录当前 effect 被那些属性依赖的长度
+	_running = 0; // 记录当前 effect 是否正在执行,防止递归进入死循环
+	deps = []; // 记录当前 effect 被那些属性依赖
 
 	// fn 用户传入的函数
 	// scheduler 调度函数，fn 中依赖的数据发生变化后需要重新调用 
@@ -52,12 +53,13 @@ class ReactiveEffect {
 			// 若 obj.flag 为 true 时，如果 obj.age 曾被依赖，
 			// 则需要将 obj.age 对应的 effect 从 obj.age 的依赖中移除，反之亦然
 			preCleanEffect(this);
+			this._running++;
 			return this.fn();
 		} finally {
+			this._running--;
 			// preCleanEffect 清理完成后，如果上一轮的依赖比本次的依赖更多
 			// 则还存在未被清理的依赖
 			postCleanEffect(this);
-			// 最后将 activeEffect 恢复为上一个 activeEffect
 			activeEffect = lastEffect;
 		}
 	}
@@ -89,8 +91,10 @@ export function trackEffect(effect, dep) {
 
 export function triggerEffects(dep) {
 	for (const effect of dep.keys()) {
-		if (effect.scheduler) {
-			effect.scheduler();
+		if (!effect._running) {
+			if (effect.scheduler) {
+				effect.scheduler();
+			}
 		}
 	}
 }
