@@ -6,13 +6,31 @@
   <title>Document</title>
 </head>
 <body>
-  <script>
-    const obj = {}
-    const map = new Map()
-    map.set(obj, 'name')
-    console.log(map.get(obj)) 
-    map.set(obj, 'age')
-    console.log(map.get(obj)) 
+  <div id="app"></div>
+  <script type="module">
+    import { reactive, effect, ref, computed } from './packages/reactivity/dist/reactivity.js'
+    const app = document.getElementById('app');
+    const obj = {
+      name: '张三',
+      age: 18,
+      some: {
+        a: 1
+      }
+    }
+    const obj1 = reactive(obj)
+    // const computed1 = computed(() => {
+    //   console.log('computed1 执行了');
+    //   return obj1.name + obj1.age;
+    // })
+    effect(() => {
+      app.innerHTML = `
+        <div>
+          <p>${obj1.some.a}</p>
+      `
+    })
+    setTimeout(() => {
+      obj1.some.a = 20;
+    }, 1000);
   </script>
 </body>
 </html>

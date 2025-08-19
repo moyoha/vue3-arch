@@ -1,17 +1,11 @@
 import { DirtyLevels } from "./constants";
 
-export function effect(fn, options?) {
-	const _effect = new ReactiveEffect(fn, () => {
-		_effect.run();
-	});
-	_effect.run();
-	// 让外界可以自己实现调度器
-	if (options) {
-		Object.assign(_effect, options);
+
+function cleanDepEffect(dep, effect) {
+	dep.delete(effect);
+	if (dep.size === 0) {
+		dep.cleanup();
 	}
-	const runner = _effect.run.bind(_effect);
-	runner.effect = _effect;
-	return runner; // 让外界可以自己 run
 }
 
 function preCleanEffect(effct) {
@@ -34,7 +28,7 @@ export class ReactiveEffect {
 	_trackId = 0; // 记录当前 effect 执行的次数
 	_depsLength = 0; // 记录当前 effect 被那些属性依赖的长度
 	_running = 0; // 记录当前 effect 是否正在执行,防止递归进入死循环
-	_dirtyLevel = DirtyLevels.NO_DIRTY; // 记录当前 effect 的脏级别
+	_dirtyLevel = DirtyLevels.DIRTY; // 记录当前 effect 的脏级别
 	deps = []; // 记录当前 effect 被那些属性依赖
 
 	// fn 用户传入的函数
@@ -75,11 +69,18 @@ export class ReactiveEffect {
 	}
 }
 
-function cleanDepEffect(dep, effect) {
-	dep.delete(effect);
-	if (dep.size === 0) {
-		dep.cleanup();
+export function effect(fn, options?) {
+	const _effect = new ReactiveEffect(fn, () => {
+		_effect.run();
+	});
+	_effect.run();
+	// 让外界可以自己实现调度器
+	if (options) {
+		Object.assign(_effect, options);
 	}
+	const runner = _effect.run.bind(_effect);
+	runner.effect = _effect;
+	return runner; // 让外界可以自己 run
 }
 
 export function trackEffect(effect, dep) {

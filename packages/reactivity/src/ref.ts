@@ -2,14 +2,20 @@ import { activeEffect, trackEffect, triggerEffects } from "./effect";
 import { toReactive } from "./reactive";
 import { createDep } from "./reactiveEffect";
 
-export function ref(value) {
-  return createRef(value);
+export function trackRefValue(ref) {
+  if (activeEffect) {
+    trackEffect(
+      activeEffect,
+      (ref.dep = createDep(() => (ref.dep = undefined), 'undefined')));
+  }
 }
 
-function createRef(value) {
-  return new RefImpl(value);
+export function triggerRefValue(ref) {
+  let dep = ref.dep;
+  if (dep) {
+    triggerEffects(dep);
+  }
 }
-
 class RefImpl {
   __v_isRef = true;
   _value;
@@ -30,20 +36,12 @@ class RefImpl {
   }
 }
 
-export function trackRefValue(ref) {
-  if (activeEffect) {
-    trackEffect(
-      activeEffect,
-      (ref.dep = createDep(() => (ref.dep = undefined), 'undefined')));
-  }
+function createRef(value) {
+  return new RefImpl(value);
 }
 
-
-export function triggerRefValue(ref) {
-  let dep = ref.dep;
-  if (dep) {
-    triggerEffects(dep);
-  }
+export function ref(value) {
+  return createRef(value);
 }
 
 class ObjectRefImpl {
