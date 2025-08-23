@@ -13,6 +13,7 @@ class ComputedRefImpl {
   public dep;
 
   constructor(getter, public setter) {
+    // 该 effect 是 getter 中响应式数据的副作用
     this.effect = new ReactiveEffect(
       () => getter(this._vaule),
       () => {

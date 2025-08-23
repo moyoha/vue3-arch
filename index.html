@@ -8,7 +8,7 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { reactive, effect, ref, computed } from './packages/reactivity/dist/reactivity.js'
+    import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
     const app = document.getElementById('app');
     const obj = {
       name: '张三',
@@ -18,15 +18,14 @@
       }
     }
     const obj1 = reactive(obj)
-    // const computed1 = computed(() => {
-    //   console.log('computed1 执行了');
-    //   return obj1.name + obj1.age;
-    // })
     effect(() => {
       app.innerHTML = `
         <div>
           <p>${obj1.some.a}</p>
       `
+    })
+    watch(obj1.some, (newValue, oldValue) => {
+      console.log(newValue, oldValue);
     })
     setTimeout(() => {
       obj1.some.a = 20;
