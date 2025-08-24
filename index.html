@@ -8,7 +8,7 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
+    import { reactive, effect, ref, computed, watchEffect } from './packages/reactivity/dist/reactivity.js'
     const app = document.getElementById('app');
     const obj = {
       name: '张三',
@@ -24,8 +24,8 @@
           <p>${obj1.some.a}</p>
       `
     })
-    watch(obj1.some, (newValue, oldValue) => {
-      console.log(newValue, oldValue);
+    watchEffect(() => {
+      console.log(obj1.some.a);
     })
     setTimeout(() => {
       obj1.some.a = 20;
