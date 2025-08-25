@@ -8,27 +8,35 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { reactive, effect, ref, computed, watchEffect } from './packages/reactivity/dist/reactivity.js'
+    import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
     const app = document.getElementById('app');
+    let timer = 5000;
+    function getData(timer) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(timer);
+        }, timer);
+      })
+    }
     const obj = {
       name: '张三',
       age: 18,
-      some: {
-        a: 1
-      }
     }
     const obj1 = reactive(obj)
-    effect(() => {
-      app.innerHTML = `
-        <div>
-          <p>${obj1.some.a}</p>
-      `
-    })
-    watchEffect(() => {
-      console.log(obj1.some.a);
+    watch(obj1, async (newValue, oldValue, onCleanUp) => {
+      let flag = true;
+      onCleanUp(() => {
+        flag = false;
+      })
+      timer = 1000;
+      const res = await getData(timer);
+      if (flag) {
+        console.log(obj1.age);
+      }
     })
     setTimeout(() => {
-      obj1.some.a = 20;
+      obj1.age = 20;
+      obj1.age = 22;
     }, 1000);
   </script>
 </body>

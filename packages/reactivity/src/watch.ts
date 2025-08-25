@@ -35,10 +35,22 @@ export function doWatch(source, cb, { deep, immediate }) {
   }
   let oldValue;
 
+  let cleanup;
+  const onCleanup = (fn) => {
+    cleanup = () => {
+      console.log('cleanup');
+      fn();
+      cleanup = null;
+    };
+  };
+
   const job = () => {
     if (cb) {
+      if (cleanup) {
+        cleanup();
+      }
       const newValue = effect.run();
-      cb(newValue, oldValue);
+      cb(newValue, oldValue, onCleanup);
       oldValue = newValue;
     } else {
       effect.run(); // watchEffect
@@ -55,6 +67,10 @@ export function doWatch(source, cb, { deep, immediate }) {
   } else {
     effect.run(); // watchEffect
   }
+  const unwatch = () => {
+    effect.stop();
+  };
+  return unwatch;
 }
 
 export function watch(source, cb, options = {} as any) {
