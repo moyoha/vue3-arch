@@ -4,40 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
   <div id="app"></div>
   <script type="module">
-    import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
-    const app = document.getElementById('app');
-    let timer = 5000;
-    function getData(timer) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve(timer);
-        }, timer);
-      })
-    }
-    const obj = {
-      name: '张三',
-      age: 18,
-    }
-    const obj1 = reactive(obj)
-    watch(obj1, async (newValue, oldValue, onCleanUp) => {
-      let flag = true;
-      onCleanUp(() => {
-        flag = false;
-      })
-      timer = 1000;
-      const res = await getData(timer);
-      if (flag) {
-        console.log(obj1.age);
-      }
-    })
-    setTimeout(() => {
-      obj1.age = 20;
-      obj1.age = 22;
-    }, 1000);
+    // import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
+    import { renderOptions, render } from './packages/runtime-dom/dist/runtime-dom.js'
+    const { h, createApp } = Vue;
+
+    const el = h('h1',{style: {color: 'red'}}, 'hello vue3');
+    render(el, document.getElementById('app'));
   </script>
 </body>
 </html>

@@ -3,3 +3,5 @@ export const isObject = (val: unknown): val is Record<any, any> =>
 
 export const isFunction = (val: unknown): val is Function =>
   typeof val === 'function';
+
+export * from "./shapeFlags";
