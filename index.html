@@ -4,16 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
 </head>
 <body>
   <div id="app"></div>
   <script type="module">
     // import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
-    import { renderOptions, render } from './packages/runtime-dom/dist/runtime-dom.js'
-    const { h, createApp } = Vue;
+    import { renderOptions, render, h } from './packages/runtime-dom/dist/runtime-dom.js'
+    // const { h, createApp } = Vue;
 
-    const el = h('h1',{style: {color: 'red'}}, 'hello vue3');
+    // const el = h('h1',{style: {color: 'red'}});
+    const el = h('h1',{style: {color: 'red'}},h('div'), h('div'))
+    console.log(el);
     render(el, document.getElementById('app'));
   </script>
 </body>
