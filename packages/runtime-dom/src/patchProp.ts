@@ -12,6 +12,7 @@ export default function patchProp(el, key, prevValue, nextValue) {
   } else if (/^on[a-z]/.test(key)) {
     patchEvent(el, key, nextValue);
   } else {
+    // 普通属性
     patchAttr(el, key, nextValue);
   }
 }

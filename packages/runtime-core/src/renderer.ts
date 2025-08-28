@@ -1,7 +1,6 @@
 import { ShapeFlags } from "@vue/shared";
 
 export function createRenderer(renderOptions) {
-
   const {
     insert: hostInsert,
     remove: hostRemove,
@@ -16,7 +15,7 @@ export function createRenderer(renderOptions) {
 
   // 渲染走这里，更新也走这里
   const patch = (n1, n2, container) => {
-    if (n1 == n2) {
+    if (n1 === n2) {
       // 两次渲染同一个元素直接跳过即可
       return;
     }

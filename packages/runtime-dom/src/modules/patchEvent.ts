@@ -4,7 +4,7 @@ function createInvoker(value) {
   return invoker;
 }
 
-export default function patchEvent(el, name, nextValue) {
+export default function patchEvent(el, name, nextValue?) {
   // vue_event_invoker
   const invokers = el._vei || (el._vei = {});
   const eventName = name.slice(2).toLowerCase();
