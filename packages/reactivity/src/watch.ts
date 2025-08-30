@@ -13,6 +13,7 @@ function traverse(source, depth, currentDepth = 0, seen = new Set()) {
     }
     currentDepth++;
   }
+  // 循环引用处理
   if (seen.has(source)) {
     return source;
   }
@@ -23,7 +24,6 @@ function traverse(source, depth, currentDepth = 0, seen = new Set()) {
 }
 
 export function doWatch(source, cb, { deep, immediate }) {
-
   const reactiveGetter = (source) => traverse(source, deep === false ? 1 : undefined);
   let getter;
   if (isReactive(source)) {

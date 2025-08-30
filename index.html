@@ -7,20 +7,21 @@
   <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
 </head>
 <body>
-  <div id="app">11</div>
+  <div id="app"></div>
   <script type="module">
     // import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
     import { renderOptions, render, h } from './packages/runtime-dom/dist/runtime-dom.js'
     // const { h, createApp } = Vue;
 
-    // const el = h('h1',{style: {color: 'red'}});
+    const el1 = h('h1',{id:'title'},'hello');
+    const el2 = h('h1',{style: { color : 'red'}},[h('span','hello'),h('span', 'world')]);
+    const el3 = h('h1',{style: { color : 'green'}}, 'n333');
     // const el = h('h1')
-    // console.log(el);
-    // render(el, document.getElementById('app'));
+    render(el2, app);
 
-    const app = document.getElementById('app');
-    const style = app.style;
-    style.color = 'red';
+    setTimeout(() => {
+      render(el3, app);
+    }, 2000);
   </script>
 </body>
 </html>
