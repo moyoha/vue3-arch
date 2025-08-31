@@ -14,6 +14,7 @@ export function createRenderer(renderOptions) {
     patchProp: hostPatchProp,
   } = renderOptions;
 
+  // 属性的更新
   const patchProps = (oldProps, newProps, el) => {
     for (let key in newProps) {
       hostPatchProp(el, key, oldProps[key], newProps[key]);
@@ -32,7 +33,62 @@ export function createRenderer(renderOptions) {
     }
   };
 
-  const pathcChildren = (n1, n2, el) => {
+  const mountChildren = (children, container) => {
+    for (let i = 0; i < children.length; i++) {
+      patch(null, children[i], container);
+    }
+  };
+
+  // 将虚拟节点转换为真实节点，并添加属性和内容挂载到容器
+  const mountElement = (vnode, container) => {
+    const { type, children, props, shapeFlag } = vnode;
+    // 第一次渲染的时候让虚拟节点和真实的 dom 创建关联 vnode.el = 真实dom
+    // 第二次渲染新的 vnode 和上一次的vnode做比对，之后更新对应的el元素，可以后续再复用这个dom元素
+    let el = (vnode.el = hostCreateElement(type));
+    if (props) {
+      for (let key in props) {
+        hostPatchProp(el, key, null, props[key]);
+      }
+    }
+    // 9 & 8 > 0 说明儿子是文本元素
+    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      hostSetElementText(el, children);
+    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      mountChildren(children, el);
+    }
+    hostInsert(el, container);
+  };
+
+  const patchKeyedChildren = (c1, c2, el) => {
+    let e1 = c1.length - 1;
+    let e2 = c2.length - 1;
+    let i = 0;
+    // 确定比对开始位置
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[i];
+      const n2 = c2[i];
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el);
+      } else {
+        break;
+      }
+      i++;
+    }
+    // 确定比对结束位置
+    while (i <= e1 && i <= e2) {
+      const n1 = c1[e1];
+      const n2 = c2[e2];
+      if (isSameVnode(n1, n2)) {
+        patch(n1, n2, el);
+      } else {
+        break;
+      }
+      e1--;
+      e2--;
+    }
+  };
+
+  const patchChildren = (n1, n2, el) => {
     // 1.新的是文本，老的是数组移除老的;
     // 2.新的是文本，老的也是文本，内容不相同替换
     // 3.老的是数组，新的是数组，全量 diff 算法
@@ -58,7 +114,7 @@ export function createRenderer(renderOptions) {
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
           // 老的是数组，新的是数组，全量 diff 算法
-          // patchChildren(n1, n2, el);
+          patchKeyedChildren(c1, c2, el);
         } else {
           // 老的是数组，新的不是数组，移除老的子节点
           unmountChildren(c1);
@@ -75,7 +131,6 @@ export function createRenderer(renderOptions) {
       }
     }
   };
-
   const patchElement = (n1, n2) => {
     // 对比属性和元素的子节点
     const el = (n2.el = n1.el);
@@ -83,7 +138,7 @@ export function createRenderer(renderOptions) {
     const newProps = n2.props || {};
 
     patchProps(oldProps, newProps, el);
-    pathcChildren(n1, n2, el);
+    patchChildren(n1, n2, el);
   };
   const processElement = (n1, n2, container) => {
     if (n1 === null) {
@@ -94,7 +149,8 @@ export function createRenderer(renderOptions) {
       patchElement(n1, n2);
     }
   };
-  // 渲染走这里，更新也走这里
+
+  // 通过虚拟节点挂载或更新 DOM 节点
   const patch = (n1, n2, container) => {
     if (n1 === n2) {
       // 两次渲染同一个元素直接跳过即可
@@ -107,29 +163,7 @@ export function createRenderer(renderOptions) {
     }
     processElement(n1, n2, container);
   };
-  const mountChildren = (children, container) => {
-    for (let i = 0; i < children.length; i++) {
-      patch(null, children[i], container);
-    }
-  };
-  const mountElement = (vnode, container) => {
-    const { type, children, props, shapeFlag } = vnode;
-    // 第一次渲染的时候让虚拟节点和真实的 dom 创建关联 vnode.el = 真实dom
-    // 第二次渲染新的 vnode 和上一次的vnode做比对，之后更新对应的el元素，可以后续再复用这个dom元素
-    let el = (vnode.el = hostCreateElement(type));
-    if (props) {
-      for (let key in props) {
-        hostPatchProp(el, key, null, props[key]);
-      }
-    }
-    // 9 & 8 > 0 说明儿子是文本元素
-    if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      hostSetElementText(el, children);
-    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      mountChildren(children, el);
-    }
-    hostInsert(el, container);
-  };
+
   const unmount = (vnode) => {
     hostRemove(vnode.el);
   };
