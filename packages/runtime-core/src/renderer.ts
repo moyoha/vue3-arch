@@ -1,5 +1,6 @@
 import { ShapeFlags } from "@vue/shared";
 import { isSameVnode } from "./createVnode";
+import { getSequence } from "./seq";
 
 export function createRenderer(renderOptions) {
   const {
@@ -58,7 +59,7 @@ export function createRenderer(renderOptions) {
     }
     hostInsert(el, container, anchor);
   };
-
+  // vue3 中分为两种，全量diff(递归diff) 快速diff(靶向更新) --> 基于模板编译
   const patchKeyedChildren = (c1, c2, el) => {
     let e1 = c1.length - 1;
     let e2 = c2.length - 1;
@@ -107,6 +108,8 @@ export function createRenderer(renderOptions) {
       const s2 = i;
 
       const keyToNewIndexMap = new Map();
+      let toBePatched = e2 - s2 + 1; // 要倒序插入的个数
+      let newIndexToOldMapIndex = new Array(toBePatched).fill(0);
       for (let i = s2; i <= e2; i++) {
         const vnode = c2[i];
         keyToNewIndexMap.set(vnode.key, i);
@@ -120,14 +123,17 @@ export function createRenderer(renderOptions) {
           unmount(vnode);
         } else {
           // 比较前后节点的差异，更行属性和儿子
+          newIndexToOldMapIndex[newIndex - s2] = i + 1;
           patch(vnode, c2[newIndex], el);
         }
       }
       // 调整顺序
       // 按照新的队列倒序插入， 通过 insertBefore 在参照物往前面插入
       // 插入的过程中，可能新的元素的多，需要创建
-      let toBePatched = e2 - s2 + 1;// 要倒序插入的个数
       //先从索引为3的位置倒序插入
+
+      let increasingSeq = getSequence(newIndexToOldMapIndex);
+      let j = increasingSeq.length - 1;
       for (let i = toBePatched - 1; i >= 0; i--) {
         let newIndex = s2 + i; // 参照物的索引
         let anchor = c2[newIndex + 1]?.el;
@@ -136,7 +142,11 @@ export function createRenderer(renderOptions) {
           // 新列表中新增的元素
           patch(null, vnode, el, anchor);
         } else {
-          hostInsert(vnode.el, el, anchor);// 接着倒序插入
+          if (i === increasingSeq[j]) {
+            j--; // diff 算法优化
+          } else {
+            hostInsert(vnode.el, el, anchor);// 接着倒序插入
+          }
         }
       };
     }
