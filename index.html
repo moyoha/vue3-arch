@@ -13,14 +13,30 @@
     import { renderOptions, render, h } from './packages/runtime-dom/dist/runtime-dom.js'
     // const { h, createApp } = Vue;
 
-    const el1 = h('h1',{id:'title'},'hello');
-    const el2 = h('h1',{style: { color : 'red'}},[h('span','hello'),h('span', 'world')]);
-    const el3 = h('h1',{style: { color : 'green'}}, 'n333');
+    const el1 = h('h1',[
+      h('span',{key: 'a'},'a'),
+      h('span',{key: 'b'},'b'),
+      h('span',{key: 'c'},'c'),
+      h('span',{key: 'd'},'d'),
+      h('span',{key: 'e'},'e'),
+      h('span',{key: 'f'},'f'),
+      h('span',{key: 'g'},'g'),
+    ]);
+    const el2 = h('h1',[
+      h('span',{key: 'a'},'a'),
+      h('span',{key: 'b'},'b'),
+      h('span',{key: 'e'},'e'),
+      h('span',{key: 'c'},'c'),
+      h('span',{key: 'd'},'d'),
+      h('span',{key: 'h'},'h'),
+      h('span',{key: 'f'},'f'),
+      h('span',{key: 'g'},'g'),
+    ]);
     // const el = h('h1')
-    render(el2, app);
+    render(el1, app);
 
     setTimeout(() => {
-      render(el3, app);
+      render(el2, app);
     }, 2000);
   </script>
 </body>

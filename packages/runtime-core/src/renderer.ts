@@ -40,7 +40,7 @@ export function createRenderer(renderOptions) {
   };
 
   // 将虚拟节点转换为真实节点，并添加属性和内容挂载到容器
-  const mountElement = (vnode, container) => {
+  const mountElement = (vnode, container, anchor = null) => {
     const { type, children, props, shapeFlag } = vnode;
     // 第一次渲染的时候让虚拟节点和真实的 dom 创建关联 vnode.el = 真实dom
     // 第二次渲染新的 vnode 和上一次的vnode做比对，之后更新对应的el元素，可以后续再复用这个dom元素
@@ -56,7 +56,7 @@ export function createRenderer(renderOptions) {
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       mountChildren(children, el);
     }
-    hostInsert(el, container);
+    hostInsert(el, container, anchor);
   };
 
   const patchKeyedChildren = (c1, c2, el) => {
@@ -85,6 +85,60 @@ export function createRenderer(renderOptions) {
       }
       e1--;
       e2--;
+    }
+    if (i > e1) {
+      // 新的比老的多，需要挂载
+      if (i <= e2) {
+        let nextPos = e2 + 1;
+        let anchor = c2[nextPos]?.el;
+        while (i <= e2) {
+          patch(null, c2[i], el, anchor);
+          i++;
+        }
+      }
+    } else if (i > e2) {
+      // 老的比新的多，需要卸载 
+      while (i <= e1) {
+        unmount(c1[i]);
+        i++;
+      }
+    } else {
+      const s1 = i;
+      const s2 = i;
+
+      const keyToNewIndexMap = new Map();
+      for (let i = s2; i <= e2; i++) {
+        const vnode = c2[i];
+        keyToNewIndexMap.set(vnode.key, i);
+      }
+
+      for (let i = s1; i <= e1; i++) {
+        const vnode = c1[i];
+        const newIndex = keyToNewIndexMap.get(vnode.key);
+        if (newIndex === undefined) {
+          // 说明这个节点在新的数组中不存在，需要卸载
+          unmount(vnode);
+        } else {
+          // 比较前后节点的差异，更行属性和儿子
+          patch(vnode, c2[newIndex], el);
+        }
+      }
+      // 调整顺序
+      // 按照新的队列倒序插入， 通过 insertBefore 在参照物往前面插入
+      // 插入的过程中，可能新的元素的多，需要创建
+      let toBePatched = e2 - s2 + 1;// 要倒序插入的个数
+      //先从索引为3的位置倒序插入
+      for (let i = toBePatched - 1; i >= 0; i--) {
+        let newIndex = s2 + i; // 参照物的索引
+        let anchor = c2[newIndex + 1]?.el;
+        let vnode = c2[newIndex];
+        if (!vnode.el) {
+          // 新列表中新增的元素
+          patch(null, vnode, el, anchor);
+        } else {
+          hostInsert(vnode.el, el, anchor);// 接着倒序插入
+        }
+      };
     }
   };
 
@@ -140,10 +194,10 @@ export function createRenderer(renderOptions) {
     patchProps(oldProps, newProps, el);
     patchChildren(n1, n2, el);
   };
-  const processElement = (n1, n2, container) => {
+  const processElement = (n1, n2, container, anchor = null) => {
     if (n1 === null) {
       // 初始化操作
-      mountElement(n2, container);
+      mountElement(n2, container, anchor);
     } else {
       // 对比更新
       patchElement(n1, n2);
@@ -151,7 +205,7 @@ export function createRenderer(renderOptions) {
   };
 
   // 通过虚拟节点挂载或更新 DOM 节点
-  const patch = (n1, n2, container) => {
+  const patch = (n1, n2, container, anchor = null) => {
     if (n1 === n2) {
       // 两次渲染同一个元素直接跳过即可
       return;
@@ -161,7 +215,7 @@ export function createRenderer(renderOptions) {
       unmount(n1);
       n1 = null;
     }
-    processElement(n1, n2, container);
+    processElement(n1, n2, container, anchor);
   };
 
   const unmount = (vnode) => {
