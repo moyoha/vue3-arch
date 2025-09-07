@@ -13,30 +13,30 @@
     import { renderOptions, render, h } from './packages/runtime-dom/dist/runtime-dom.js'
     // const { h, createApp } = Vue;
 
-    const el1 = h('h1',[
-      h('span',{key: 'a'},'a'),
-      h('span',{key: 'b'},'b'),
-      h('span',{key: 'c'},'c'),
-      h('span',{key: 'd'},'d'),
-      h('span',{key: 'e'},'e'),
-      h('span',{key: 'f'},'f'),
-      h('span',{key: 'g'},'g'),
-    ]);
-    const el2 = h('h1',[
-      h('span',{key: 'a'},'a'),
-      h('span',{key: 'b'},'b'),
-      h('span',{key: 'e'},'e'),
-      h('span',{key: 'c'},'c'),
-      h('span',{key: 'd'},'d'),
-      h('span',{key: 'h'},'h'),
-      h('span',{key: 'f'},'f'),
-      h('span',{key: 'g'},'g'),
-    ]);
+    // const el1 = h('h1',[
+    //   h('span',{key: 'a'},'a'),
+    //   h('span',{key: 'b'},'b'),
+    //   h('span',{key: 'c'},'c'),
+    //   h('span',{key: 'd'},'d'),
+    //   h('span',{key: 'e'},'e'),
+    //   h('span',{key: 'f'},'f'),
+    //   h('span',{key: 'g'},'g'),
+    // ]);
+    // const el2 = h('h1',[
+    //   h('span',{key: 'a'},'a'),
+    //   h('span',{key: 'b'},'b'),
+    //   h('span',{key: 'e'},'e'),
+    //   h('span',{key: 'c'},'c'),
+    //   h('span',{key: 'd'},'d'),
+    //   h('span',{key: 'h'},'h'),
+    //   h('span',{key: 'f'},'f'),
+    //   h('span',{key: 'g'},'g'),
+    // ]);
     // const el = h('h1')
-    render(el1, app);
+    render(h('h1', 'hello world'), app);
 
     setTimeout(() => {
-      render(el2, app);
+      render(h(null), app);
     }, 2000);
   </script>
 </body>

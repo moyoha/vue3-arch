@@ -1,5 +1,5 @@
 import { ShapeFlags } from "@vue/shared";
-import { isSameVnode } from "./createVnode";
+import { isSameVnode, Text } from "./createVnode";
 import { getSequence } from "./seq";
 
 export function createRenderer(renderOptions) {
@@ -28,6 +28,10 @@ export function createRenderer(renderOptions) {
     }
   };
 
+  const unmount = (vnode) => {
+    hostRemove(vnode.el);
+  };
+
   const unmountChildren = (children) => {
     for (let i = 0; i < children.length; i++) {
       unmount(children[i]);
@@ -40,7 +44,7 @@ export function createRenderer(renderOptions) {
     }
   };
 
-  // 将虚拟节点转换为真实节点，并添加属性和内容挂载到容器
+  // 第一次挂载时调用，将虚拟节点转换为真实节点，并添加属性和内容挂载到容器
   const mountElement = (vnode, container, anchor = null) => {
     const { type, children, props, shapeFlag } = vnode;
     // 第一次渲染的时候让虚拟节点和真实的 dom 创建关联 vnode.el = 真实dom
@@ -88,7 +92,7 @@ export function createRenderer(renderOptions) {
       e2--;
     }
     if (i > e1) {
-      // 新的比老的多，需要挂载
+      // 特殊情况处理，新 children 相较于老 children 只是新增了一些节点，将新增的节点挂载即可
       if (i <= e2) {
         let nextPos = e2 + 1;
         let anchor = c2[nextPos]?.el;
@@ -98,7 +102,7 @@ export function createRenderer(renderOptions) {
         }
       }
     } else if (i > e2) {
-      // 老的比新的多，需要卸载 
+      // 特殊情况处理，新 children 相较于老 children 只是删除了一些节点，将删除的节点卸载即可
       while (i <= e1) {
         unmount(c1[i]);
         i++;
@@ -122,7 +126,7 @@ export function createRenderer(renderOptions) {
           // 说明这个节点在新的数组中不存在，需要卸载
           unmount(vnode);
         } else {
-          // 比较前后节点的差异，更行属性和儿子
+          // 比较前后节点的差异，更新 children
           newIndexToOldMapIndex[newIndex - s2] = i + 1;
           patch(vnode, c2[newIndex], el);
         }
@@ -214,6 +218,18 @@ export function createRenderer(renderOptions) {
     }
   };
 
+  const processText = (n1, n2, container) => {
+    if (n1 === null) {
+      n2.el = hostCreateText(n2.children);
+      hostInsert(n2.el, container);
+    } else {
+      const el = (n2.el = n1.el);
+      if (n2.children !== n1.children) {
+        hostSetText(el, n2.children);
+      }
+    }
+  };
+
   // 通过虚拟节点挂载或更新 DOM 节点
   const patch = (n1, n2, container, anchor = null) => {
     if (n1 === n2) {
@@ -225,12 +241,17 @@ export function createRenderer(renderOptions) {
       unmount(n1);
       n1 = null;
     }
-    processElement(n1, n2, container, anchor);
+    const { type } = n2;
+    switch (type) {
+      case Text:
+        processText(n1, n2, container);
+        break;
+
+      default:
+        processElement(n1, n2, container, anchor);
+    }
   };
 
-  const unmount = (vnode) => {
-    hostRemove(vnode.el);
-  };
   const render = (vnode, container) => {
     if (vnode === null) {
       if (container._vnode) {
