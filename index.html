@@ -10,33 +10,13 @@
   <div id="app"></div>
   <script type="module">
     // import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
-    import { renderOptions, render, h } from './packages/runtime-dom/dist/runtime-dom.js'
+    import { renderOptions, render, h, Fragment } from './packages/runtime-dom/dist/runtime-dom.js'
     // const { h, createApp } = Vue;
-
-    // const el1 = h('h1',[
-    //   h('span',{key: 'a'},'a'),
-    //   h('span',{key: 'b'},'b'),
-    //   h('span',{key: 'c'},'c'),
-    //   h('span',{key: 'd'},'d'),
-    //   h('span',{key: 'e'},'e'),
-    //   h('span',{key: 'f'},'f'),
-    //   h('span',{key: 'g'},'g'),
-    // ]);
-    // const el2 = h('h1',[
-    //   h('span',{key: 'a'},'a'),
-    //   h('span',{key: 'b'},'b'),
-    //   h('span',{key: 'e'},'e'),
-    //   h('span',{key: 'c'},'c'),
-    //   h('span',{key: 'd'},'d'),
-    //   h('span',{key: 'h'},'h'),
-    //   h('span',{key: 'f'},'f'),
-    //   h('span',{key: 'g'},'g'),
-    // ]);
     // const el = h('h1')
-    render(h('h1', 'hello world'), app);
+    render(h(Fragment, [h('h1', 'hello'), h('h2', 'WORLD')]), app);
 
     setTimeout(() => {
-      render(h(null), app);
+      render(null, app);
     }, 2000);
   </script>
 </body>
