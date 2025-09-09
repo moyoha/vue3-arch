@@ -20,6 +20,11 @@
         }
       },
       render() {
+        setTimeout(() => {
+          this.count++;
+          this.count++;
+        }, 2000);
+        console.log('render');
         return h('div', `${this.count}`)
       }
     }
