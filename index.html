@@ -19,16 +19,16 @@
           count: 0
         }
       },
-      render() {
-        setTimeout(() => {
-          this.count++;
-          this.count++;
-        }, 2000);
-        console.log('render');
+      props: {
+        name: String,
+        age: Number,
+      },
+      render(proxy) {
+        console.log(proxy);
         return h('div', `${this.count}`)
       }
     }
-    render(h(comp), app);
+    render(h(comp, { a: 1, b: 2, name: 'ma', age: 18 }), app);
 
     // setTimeout(() => {
     //   render(null, app);

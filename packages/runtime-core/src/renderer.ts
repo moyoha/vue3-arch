@@ -244,18 +244,42 @@ export function createRenderer(renderOptions) {
     }
   };
 
-  const mountComponent = (n2, container, anchor = null) => {
-    const { data = () => {}, render } = n2.type;
+  const initProps = (instance, rawProps) => {
+    const props = {};
+    const attrs = {};
+    const propOptions = instance.propsOptions || {};
+    if (rawProps) {
+      for (const key in rawProps) {
+        // props 属性校验就放在这个地方
+        if (propOptions[key]) {
+          props[key] = rawProps[key];
+        } else {
+          attrs[key] = rawProps[key];
+        }
+      }
+    }
+    instance.props = reactive(props); // 应该使用 shallowReactive，因为在组件中不应该修改 props
+    instance.attrs = attrs;
+  };
+
+  const mountComponent = (vnode, container, anchor = null) => {
+    const { data = () => {}, render, props: propsOptions = {} } = vnode.type;
     const state = reactive(data());
 
     const instance = {
       state,
-      vnode: n2,
+      vnode: vnode,
       isMounted: false,
       subTree: null,
       update: null,
+      props: {},
+      attrs: {},
+      propsOptions,
+      component: null,
     };
-
+    vnode.component = instance;
+    console.log(instance);
+    initProps(instance, vnode.props);
     const componentUpdate = () => {
       if (!instance.isMounted) {
         // 初始化
