@@ -13,11 +13,21 @@
     import { renderOptions, render, h, Fragment } from './packages/runtime-dom/dist/runtime-dom.js'
     // const { h, createApp } = Vue;
     // const el = h('h1')
-    render(h(Fragment, [h('h1', 'hello'), h('h2', 'WORLD')]), app);
+    const comp = {
+      data() {
+        return {
+          count: 0
+        }
+      },
+      render() {
+        return h('div', `${this.count}`)
+      }
+    }
+    render(h(comp), app);
 
-    setTimeout(() => {
-      render(null, app);
-    }, 2000);
+    // setTimeout(() => {
+    //   render(null, app);
+    // }, 2000);
   </script>
 </body>
 </html>
