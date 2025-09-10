@@ -24,8 +24,8 @@
         age: Number,
       },
       render(proxy) {
-        console.log(proxy.$attrs);
-        return h('div', `${this.count}`)
+        console.log(proxy.$attrs, proxy);
+        return h('div', `${proxy.count}`)
       }
     }
     render(h(comp, { a: 1, b: 2, name: 'ma', age: 18 }), app);

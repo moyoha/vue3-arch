@@ -3,6 +3,7 @@ import { Fragment, isSameVnode, Text } from "./createVnode";
 import { getSequence } from "./seq";
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { queueJob } from "./scheduler";
+import { createComponent, setupComponent } from "./component";
 
 export function createRenderer(renderOptions) {
   const {
@@ -244,73 +245,8 @@ export function createRenderer(renderOptions) {
     }
   };
 
-  const initProps = (instance, rawProps) => {
-    const props = {};
-    const attrs = {};
-    const propOptions = instance.propsOptions || {};
-    if (rawProps) {
-      for (const key in rawProps) {
-        // props 属性校验就放在这个地方
-        if (propOptions[key]) {
-          props[key] = rawProps[key];
-        } else {
-          attrs[key] = rawProps[key];
-        }
-      }
-    }
-    instance.props = reactive(props); // 应该使用 shallowReactive，因为在组件中不应该修改 props
-    instance.attrs = attrs;
-  };
-
-  const mountComponent = (vnode, container, anchor = null) => {
-    const { data = () => {}, render, props: propsOptions = {} } = vnode.type;
-    const state = reactive(data());
-
-    const instance = {
-      state,
-      vnode: vnode,
-      isMounted: false,
-      subTree: null,
-      update: null,
-      props: {},
-      attrs: {},
-      propsOptions,
-      component: null,
-      proxy: null, // 用来代理 props data state
-    };
-
-    const publicProperties = {
-      $attrs: () => instance.attrs,
-    };
-
-    instance.proxy = new Proxy(state, {
-      get(target, key) {
-        const { props, state } = instance;
-        if (state && hasOwn(target, key)) {
-          return target[key];
-        } else if (props && hasOwn(props, key)) {
-          return props[key];
-        }
-        const getter = publicProperties[key];
-        if (getter) {
-          return getter();
-        }
-      },
-      set(target, key, value) {
-        const { props, state } = instance;
-        if (state && hasOwn(target, key)) {
-          target[key] = value;
-        } else if (props && hasOwn(props, key)) {
-          console.warn('props is readonly');
-          props[key] = value;
-        }
-        return true;
-      }
-    });
-
-    vnode.component = instance;
-    console.log(instance);
-    initProps(instance, vnode.props);
+  function setupRenderEffect(instance, container, anchor) {
+    const { render } = instance;
     const componentUpdate = () => {
       if (!instance.isMounted) {
         // 初始化
@@ -330,6 +266,16 @@ export function createRenderer(renderOptions) {
     });
     instance.update = () => effect.run();
     instance.update();
+  }
+
+  const mountComponent = (vnode, container, anchor = null) => {
+    // 1.创建组件实例
+    // 2.给实例的属性赋值
+    // 3.创建一个effect
+
+    const instance = (vnode.component = createComponent(vnode));
+    setupComponent(instance);
+    setupRenderEffect(instance, container, anchor);
   };
 
   const processComponent = (n1, n2, container, anchor = null) => {
