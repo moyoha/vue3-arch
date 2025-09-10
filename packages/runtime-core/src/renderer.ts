@@ -1,4 +1,4 @@
-import { ShapeFlags } from "@vue/shared";
+import { hasOwn, ShapeFlags } from "@vue/shared";
 import { Fragment, isSameVnode, Text } from "./createVnode";
 import { getSequence } from "./seq";
 import { reactive, ReactiveEffect } from "@vue/reactivity";
@@ -276,20 +276,51 @@ export function createRenderer(renderOptions) {
       attrs: {},
       propsOptions,
       component: null,
+      proxy: null, // 用来代理 props data state
     };
+
+    const publicProperties = {
+      $attrs: () => instance.attrs,
+    };
+
+    instance.proxy = new Proxy(state, {
+      get(target, key) {
+        const { props, state } = instance;
+        if (state && hasOwn(target, key)) {
+          return target[key];
+        } else if (props && hasOwn(props, key)) {
+          return props[key];
+        }
+        const getter = publicProperties[key];
+        if (getter) {
+          return getter();
+        }
+      },
+      set(target, key, value) {
+        const { props, state } = instance;
+        if (state && hasOwn(target, key)) {
+          target[key] = value;
+        } else if (props && hasOwn(props, key)) {
+          console.warn('props is readonly');
+          props[key] = value;
+        }
+        return true;
+      }
+    });
+
     vnode.component = instance;
     console.log(instance);
     initProps(instance, vnode.props);
     const componentUpdate = () => {
       if (!instance.isMounted) {
         // 初始化
-        const subTree = render.call(state, state);
+        const subTree = render.call(instance.proxy, instance.proxy);
         patch(null, subTree, container, anchor);
         instance.isMounted = true;
         instance.subTree = subTree;
       } else {
         // 更新
-        const subTree = render.call(state, state);
+        const subTree = render.call(instance.proxy, instance.proxy);
         patch(instance.subTree, subTree, container, anchor);
         instance.subTree = subTree;
       }

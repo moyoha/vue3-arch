@@ -24,7 +24,7 @@
         age: Number,
       },
       render(proxy) {
-        console.log(proxy);
+        console.log(proxy.$attrs);
         return h('div', `${this.count}`)
       }
     }
