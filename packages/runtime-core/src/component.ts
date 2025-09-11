@@ -1,5 +1,4 @@
 import { reactive } from "@vue/reactivity";
-import { render } from "@vue/runtime-dom";
 import { hasOwn, isFunction } from "@vue/shared";
 
 export function createComponent(vnode) {
@@ -50,7 +49,7 @@ export function setupComponent(instance) {
   const { vnode } = instance;
   initProps(instance, vnode.props);
   instance.proxy = new Proxy(instance, handler);
-  const { data, render } = vnode.type;
+  const { data = () => {}, render } = vnode.type;
   if(!isFunction(data)) {
     console.warn('data must be a function');
     return;

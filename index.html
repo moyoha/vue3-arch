@@ -1,38 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
-</head>
-<body>
-  <div id="app"></div>
-  <script type="module">
-    // import { reactive, effect, ref, computed, watch } from './packages/reactivity/dist/reactivity.js'
-    import { renderOptions, render, h, Fragment } from './packages/runtime-dom/dist/runtime-dom.js'
-    // const { h, createApp } = Vue;
-    // const el = h('h1')
-    const comp = {
-      data() {
-        return {
-          count: 0
-        }
-      },
-      props: {
-        name: String,
-        age: Number,
-      },
-      render(proxy) {
-        console.log(proxy.$attrs, proxy);
-        return h('div', `${proxy.count}`)
-      }
-    }
-    render(h(comp, { a: 1, b: 2, name: 'ma', age: 18 }), app);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      // import {
+      //   createRenderer,
+      //   render,
+      //   Fragment,
+      //   h,
+      //   Text,
+      // } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js";
+      import { render, h, Text, Fragment } from "./packages/runtime-dom/dist/runtime-dom.js";
 
-    // setTimeout(() => {
-    //   render(null, app);
-    // }, 2000);
-  </script>
-</body>
+      const RenderComponent = {
+        props: {
+          address: String,
+        },
+        render() {
+          return h(Text, this.address);
+        },
+      };
+
+      const VueComponent = {
+        data() {
+          return { flag: true };
+        },
+        render() {
+          return h(Fragment, null, [
+            h("button", { onClick: () => {
+              console.log(this.flag)
+              this.flag = !this.flag
+            } }, "点我啊"),
+            h(RenderComponent, { address: this.flag ? "北京" : "上海" }),
+          ]);
+        },
+      };
+
+      render(h(VueComponent, {}), app);
+    </script>
+  </body>
 </html>

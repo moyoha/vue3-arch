@@ -9,7 +9,7 @@ export default function patchProp(el, key, prevValue, nextValue) {
     return patchClass(el, nextValue);
   } else if (key === 'style') {
     patchStyle(el, prevValue, nextValue);
-  } else if (/^on[a-z]/.test(key)) {
+  } else if (/^on[^a-z]/.test(key)) {
     patchEvent(el, key, nextValue);
   } else {
     // 普通属性

@@ -8,7 +8,7 @@
 //  3.1 第二个参数只能是属性
 //  3.2 第三个参数是儿子
 
-import { isArray, isObject, isString, ShapeFlags } from "@vue/shared";
+import { isArray, isObject } from "@vue/shared";
 import { createVNode, isVnode } from "./createVnode";
 
 export function h(type, propsOrChildren?, children?) {
