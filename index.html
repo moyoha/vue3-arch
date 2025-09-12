@@ -18,26 +18,21 @@
       import { render, h, Text, Fragment, ref } from "./packages/runtime-dom/dist/runtime-dom.js";
 
 
-      const RenderComponent = {
-        setup(props, { emit, attrs, expose, slots }) {
-          return (proxy) => {
-            console.log(slots);
-            return h(Fragment, [slots.footer("fff"), slots.header("hhh")]);
-          };
-        },
-      };
       const VueComponent = {
-        setup(props) {
+        setup(props, { emit, expose, slots, attrs }) {
           return (proxy) => {
-            return h(RenderComponent, null, {
-              // 格局格式来区分
-              header: (t) => h("header", "header" + t),
-              footer: (t) => h("footer", "footer" + t),
-            });
+            return h(
+              "button",
+              { onClick: () => emit("myEvent", 100) },
+              "点我啊"
+            );
           };
         },
       };
-      render(h(VueComponent, {}), app);
+      render(h(VueComponent, { onMyEvent: (value) => alert(value) }), app);
+      setTimeout(() => {
+        render(null, app);
+      }, 3000);
     </script>
   </body>
 </html>
