@@ -74,7 +74,10 @@ export function setupComponent(instance) {
         handler && handler(...payload);
       },
     }
+
+    setCurrentInstance(instance);
     const setupResult = setup(instance.props, setupContext);
+    unsetCurrentInstance();
     if(isFunction(setupResult)) {
       instance.render = setupResult;
     } else {
@@ -119,3 +122,14 @@ export function initSlots(instance, children) {
     instance.slots = {};
   }
 }
+
+export let currentInstance = null;
+export const getCurrentInstance = () => {
+  return currentInstance;
+};
+export const setCurrentInstance = (instance) => {
+  currentInstance = instance;
+};
+export const unsetCurrentInstance = () => {
+  currentInstance = null;
+};

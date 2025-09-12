@@ -4,6 +4,7 @@ import { getSequence } from "./seq";
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { queueJob } from "./scheduler";
 import { createComponentInstance, setupComponent } from "./component";
+import { invokeArray } from "./apiLifecycle";
 
 export function createRenderer(renderOptions) {
   const {
@@ -260,23 +261,35 @@ export function createRenderer(renderOptions) {
   function setupRenderEffect(instance, container, anchor) {
     const { render } = instance;
     const componentUpdate = () => {
+      const { bm, m } = instance;
       if (!instance.isMounted) {
-        // 初始化
+        if (bm) {
+          invokeArray(bm);
+        }
         const subTree = render.call(instance.proxy, instance.proxy);
         patch(null, subTree, container, anchor);
         instance.isMounted = true;
         instance.subTree = subTree;
+        if (m) {
+          invokeArray(m);
+        }
       } else {
         // 更新
-        const { next } = instance;
+        const { next, bu, u } = instance;
          if (next) {
           // 更新属性和插槽
           updateComponentPreRender(instance, next);
           // slots , props
         }
+        if (bu) {
+          invokeArray(bu);
+        }
         const subTree = render.call(instance.proxy, instance.proxy);
         patch(instance.subTree, subTree, container, anchor);
         instance.subTree = subTree;
+        if (u) {
+          invokeArray(u);
+        }
       }
     };
     const effect = new ReactiveEffect(componentUpdate, () => {
