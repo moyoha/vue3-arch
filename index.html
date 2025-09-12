@@ -18,24 +18,25 @@
       import { render, h, Text, Fragment, ref } from "./packages/runtime-dom/dist/runtime-dom.js";
 
 
-      const VueComponent = {
+      const RenderComponent = {
         setup(props, { emit, attrs, expose, slots }) {
-          // ...  reactive computed
-          const a = ref(1);
-          // 提供渲染逻辑
-          setTimeout(() => {
-            a.value = 2;
-          }, 1000);
-          return {
-            // setup 可以返回函数  亦可以返回对象
-            a,
+          return (proxy) => {
+            console.log(slots);
+            return h(Fragment, [slots.footer("fff"), slots.header("hhh")]);
           };
         },
-        render(proxy) {
-            return h("div", proxy.a);
-          }
       };
-
+      const VueComponent = {
+        setup(props) {
+          return (proxy) => {
+            return h(RenderComponent, null, {
+              // 格局格式来区分
+              header: (t) => h("header", "header" + t),
+              footer: (t) => h("footer", "footer" + t),
+            });
+          };
+        },
+      };
       render(h(VueComponent, {}), app);
     </script>
   </body>

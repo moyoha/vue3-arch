@@ -3,7 +3,7 @@ import { Fragment, isSameVnode, Text } from "./createVnode";
 import { getSequence } from "./seq";
 import { reactive, ReactiveEffect } from "@vue/reactivity";
 import { queueJob } from "./scheduler";
-import { createComponent, setupComponent } from "./component";
+import { createComponentInstance, setupComponent } from "./component";
 
 export function createRenderer(renderOptions) {
   const {
@@ -288,7 +288,7 @@ export function createRenderer(renderOptions) {
     // 2.给实例的属性赋值
     // 3.创建一个effect
 
-    const instance = (vnode.component = createComponent(vnode));
+    const instance = (vnode.component = createComponentInstance(vnode));
     setupComponent(instance);
     setupRenderEffect(instance, container, anchor);
   };

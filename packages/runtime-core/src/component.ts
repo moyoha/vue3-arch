@@ -1,7 +1,7 @@
 import { proxyRefs, reactive } from "@vue/reactivity";
-import { hasOwn, isFunction } from "@vue/shared";
+import { hasOwn, isFunction, ShapeFlags } from "@vue/shared";
 
-export function createComponent(vnode) {
+export function createComponentInstance(vnode) {
   const instance = {
     data: null,
     vnode: vnode,
@@ -10,6 +10,7 @@ export function createComponent(vnode) {
     update: null,
     props: {},
     attrs: {},
+    slots: {},
     propsOptions: vnode.type.props, // 组件上声明的属性
     component: null,
     proxy: null, // 用来代理 props data
@@ -49,15 +50,20 @@ const handler = {
 }
 const publicProperties = {
     $attrs: (instance) => instance.attrs,
+    $slots: (instance) => instance.slots,
 };
 export function setupComponent(instance) {
   const { vnode } = instance;
   initProps(instance, vnode.props);
+  initSlots(instance, vnode.children);
   instance.proxy = new Proxy(instance, handler);
   const { data = () => {}, render, setup } = vnode.type;
 
   if(setup) {
-    const setupContext = {}
+    const setupContext = {
+      attrs: instance.attrs,
+      slots: instance.slots,
+    }
     const setupResult = setup(instance.props, setupContext);
     if(isFunction(setupResult)) {
       instance.render = setupResult;
@@ -95,3 +101,11 @@ const initProps = (instance, rawProps) => {
   instance.props = reactive(props); // 应该使用 shallowReactive，因为在组件中不应该修改 props
   instance.attrs = attrs;
 };
+
+export function initSlots(instance, children) {
+  if (instance.vnode.shapeFlag & ShapeFlags.SLOTS_CHILDREN) {
+    instance.slots = children;
+  } else {
+    instance.slots = {};
+  }
+}
