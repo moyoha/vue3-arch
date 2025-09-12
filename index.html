@@ -15,30 +15,25 @@
       //   h,
       //   Text,
       // } from "/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-browser.prod.js";
-      import { render, h, Text, Fragment } from "./packages/runtime-dom/dist/runtime-dom.js";
+      import { render, h, Text, Fragment, ref } from "./packages/runtime-dom/dist/runtime-dom.js";
 
-      const RenderComponent = {
-        props: {
-          address: String,
-        },
-        render() {
-          return h(Text, this.address);
-        },
-      };
 
       const VueComponent = {
-        data() {
-          return { flag: true };
+        setup(props, { emit, attrs, expose, slots }) {
+          // ...  reactive computed
+          const a = ref(1);
+          // 提供渲染逻辑
+          setTimeout(() => {
+            a.value = 2;
+          }, 1000);
+          return {
+            // setup 可以返回函数  亦可以返回对象
+            a,
+          };
         },
-        render() {
-          return h(Fragment, null, [
-            h("button", { onClick: () => {
-              console.log(this.flag)
-              this.flag = !this.flag
-            } }, "点我啊"),
-            h(RenderComponent, { address: this.flag ? "北京" : "上海" }),
-          ]);
-        },
+        render(proxy) {
+            return h("div", proxy.a);
+          }
       };
 
       render(h(VueComponent, {}), app);

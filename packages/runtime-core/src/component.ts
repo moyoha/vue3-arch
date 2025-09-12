@@ -1,4 +1,4 @@
-import { reactive } from "@vue/reactivity";
+import { proxyRefs, reactive } from "@vue/reactivity";
 import { hasOwn, isFunction } from "@vue/shared";
 
 export function createComponent(vnode) {
@@ -13,6 +13,7 @@ export function createComponent(vnode) {
     propsOptions: vnode.type.props, // 组件上声明的属性
     component: null,
     proxy: null, // 用来代理 props data
+    setupState: {},
   };
 
   return instance;
@@ -20,11 +21,13 @@ export function createComponent(vnode) {
 
 const handler = {
   get(target, key) {
-    const { props, data } = target;
+    const { props, data, setupState } = target;
     if (data && hasOwn(data, key)) {
       return data[key];
     } else if (props && hasOwn(props, key)) {
       return props[key];
+    } else if (setupState && hasOwn(setupState, key)) {
+      return setupState[key];
     }
     const getter = publicProperties[key];
     if (getter) {
@@ -32,12 +35,14 @@ const handler = {
     }
   },
   set(target, key, value) {
-    const { props, data } = target;
+    const { props, data, setupState } = target;
     if (data && hasOwn(data, key)) {
       data[key] = value;
     } else if (props && hasOwn(props, key)) {
       console.warn('props is readonly');
       props[key] = value;
+    } else if (setupState && hasOwn(setupState, key)) {
+      setupState[key] = value;
     }
     return true;
   }
@@ -49,14 +54,27 @@ export function setupComponent(instance) {
   const { vnode } = instance;
   initProps(instance, vnode.props);
   instance.proxy = new Proxy(instance, handler);
-  const { data = () => {}, render } = vnode.type;
+  const { data = () => {}, render, setup } = vnode.type;
+
+  if(setup) {
+    const setupContext = {}
+    const setupResult = setup(instance.props, setupContext);
+    if(isFunction(setupResult)) {
+      instance.render = setupResult;
+    } else {
+      instance.setupState = proxyRefs(setupResult);
+    }
+  }
+
   if(!isFunction(data)) {
     console.warn('data must be a function');
     return;
   }
   // data 中可以拿到 props
   instance.data = reactive(data.call(instance.proxy));
-  instance.render = render;
+  if(!instance.render) {
+    instance.render = render;
+  }
 }
 
 const initProps = (instance, rawProps) => {
