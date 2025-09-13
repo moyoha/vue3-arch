@@ -19,76 +19,46 @@
         onBeforeUpdate,
         onUpdated,
         onMounted,
-        getCurrentInstance
+        getCurrentInstance,
+        provide,
+        inject,
       } from "./packages/runtime-dom/dist/runtime-dom.js";
 
 
-      function parentHook() {
-        onBeforeMount(() => {
-          const instance = getCurrentInstance();
-          console.log("parent beforemount", instance);
-        });
-        onMounted(() => {
-          console.log("parent mounted");
-        });
-        onMounted(() => {
-          console.log("parent mounted2");
-        });
-        onBeforeUpdate(() => {
-          console.log("update beforeupdate");
-        });
-        onUpdated(() => {
-          console.log("update updated");
-        });
-      }
-
-      // 父初始化 -》 子初始化-》 父完成
-      // 父更新 -》 子更新  -》 子完成 -》 父完成
-      const My = {
-        props: {
-          value: String,
-        },
-        // beforeCreate created
-
-        setup(props, { emit, expose, slots, attrs }) {
-          //instance -> 钩子关联在一起，在特定的时机去调用对应的钩子
-          onBeforeMount(() => {
-            console.log(getCurrentInstance(), "child bug");
-            console.log("child beforemount");
-          });
-          onMounted(() => {
-            console.log("child mounted");
-          });
-          onBeforeUpdate(() => {
-            console.log("child beforeupdate");
-          });
-          onUpdated(() => {
-            console.log("child updated");
-          });
+     const P3 = {
+        P3: 1,
+        setup(props) {
+          const name = inject("name");
+          console.log(name);
+          const age = inject("age", 30);
+          console.log(age);
           return () => {
-            return h("div", props.value);
+            return h("div", [name.value, age]);
           };
         },
       };
-      const VueComponent = {
-        setup(props, { emit, expose, slots, attrs }) {
-          console.log(getCurrentInstance(), "parent");
-
-          //instance -> 钩子关联在一起，在特定的时机去调用对应的钩子
-
-          const val = ref("a");
+      const P2 = {
+        P2: 1,
+        render() {
+          return h(P3);
+        },
+      };
+      const P1 = {
+        P1: 1,
+        setup(props) {
+          const name = ref("jw");
 
           setTimeout(() => {
-            val.value = "b";
+            name.value = "handsome jw";
           }, 1000);
-          parentHook();
-          return () => {
-            return h(My, { value: val.value });
-          };
+          provide("name", name);
+
+          return () => h(P2);
         },
       };
+      // 在父组件中提供数据，后代组件中获取数据
+      render(h(P1), app);
 
-      render(h(VueComponent), app);
     </script>
   </body>
 </html>

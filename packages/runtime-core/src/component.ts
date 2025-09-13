@@ -1,7 +1,7 @@
 import { proxyRefs, reactive } from "@vue/reactivity";
 import { hasOwn, isFunction, ShapeFlags } from "@vue/shared";
 
-export function createComponentInstance(vnode) {
+export function createComponentInstance(vnode, parent) {
   const instance = {
     data: null,
     vnode: vnode,
@@ -16,6 +16,8 @@ export function createComponentInstance(vnode) {
     proxy: null, // 用来代理 props data
     setupState: {},
     exposed: null,
+    parent,
+    provides: parent ? parent.provides : Object.create(null),
   };
 
   return instance;
@@ -48,10 +50,10 @@ const handler = {
     }
     return true;
   }
-}
+};
 const publicProperties = {
-    $attrs: (instance) => instance.attrs,
-    $slots: (instance) => instance.slots,
+  $attrs: (instance) => instance.attrs,
+  $slots: (instance) => instance.slots,
 };
 export function setupComponent(instance) {
   const { vnode } = instance;
@@ -60,7 +62,7 @@ export function setupComponent(instance) {
   instance.proxy = new Proxy(instance, handler);
   const { data = () => {}, render, setup } = vnode.type;
 
-  if(setup) {
+  if (setup) {
     const setupContext = {
       attrs: instance.attrs,
       slots: instance.slots,
@@ -73,25 +75,25 @@ export function setupComponent(instance) {
         const handler = instance.vnode.props[eventName];
         handler && handler(...payload);
       },
-    }
+    };
 
     setCurrentInstance(instance);
     const setupResult = setup(instance.props, setupContext);
     unsetCurrentInstance();
-    if(isFunction(setupResult)) {
+    if (isFunction(setupResult)) {
       instance.render = setupResult;
     } else {
       instance.setupState = proxyRefs(setupResult);
     }
   }
 
-  if(!isFunction(data)) {
+  if (!isFunction(data)) {
     console.warn('data must be a function');
     return;
   }
   // data 中可以拿到 props
   instance.data = reactive(data.call(instance.proxy));
-  if(!instance.render) {
+  if (!instance.render) {
     instance.render = render;
   }
 }

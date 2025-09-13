@@ -9,7 +9,7 @@
 //  3.2 第三个参数是儿子
 
 import { isArray, isObject } from "@vue/shared";
-import { createVNode, isVnode } from "./createVnode";
+import { createVnode, isVnode } from "./createVnode";
 
 export function h(type, propsOrChildren?, children?) {
   const l = arguments.length;
@@ -17,13 +17,13 @@ export function h(type, propsOrChildren?, children?) {
     if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
       if (isVnode(propsOrChildren)) {
         // h('div', h('span'))
-        return createVNode(type, null, [propsOrChildren]);
+        return createVnode(type, null, [propsOrChildren]);
       } else {
         // h('div', { class: 'a' })
-        return createVNode(type, propsOrChildren);
+        return createVnode(type, propsOrChildren);
       }
     }
-    return createVNode(type, null, propsOrChildren);
+    return createVnode(type, null, propsOrChildren);
   } else {
     if (l > 3) {
       children = Array.from(arguments).slice(2);
@@ -31,6 +31,6 @@ export function h(type, propsOrChildren?, children?) {
     if (l === 3 && isVnode(children)) {
       children = [children];
     }
-    return createVNode(type, propsOrChildren, children);
+    return createVnode(type, propsOrChildren, children);
   }
 }
