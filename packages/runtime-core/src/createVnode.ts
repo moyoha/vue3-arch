@@ -1,4 +1,5 @@
 import { isObject, isString, ShapeFlags } from "@vue/shared";
+import { isTeleport } from "./components/Teleport";
 
 export const Text = Symbol('Text');
 export const Fragment = Symbol('Fragment');
@@ -15,9 +16,11 @@ export function createVnode(type, props, children?) {
   const shapeFlag =
     isString(type)
       ? ShapeFlags.ELEMENT
-      : isObject(type)
-        ? ShapeFlags.STATEFUL_COMPONENT
-        : 0;
+      : isTeleport(type)
+        ? ShapeFlags.TELEPORT
+        : isObject(type)
+          ? ShapeFlags.STATEFUL_COMPONENT
+          : 0;
   const vnode = {
     __v_isVnode: true,
     type,

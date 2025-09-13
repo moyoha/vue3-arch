@@ -7,6 +7,8 @@
   </head>
   <body>
     <div id="app"></div>
+    <div id="root"></div>
+    <div id="root2"></div>
     <script type="module">
       // import {
       //   createRenderer,
@@ -22,42 +24,15 @@
         getCurrentInstance,
         provide,
         inject,
+        Teleport,
       } from "./packages/runtime-dom/dist/runtime-dom.js";
 
 
-     const P3 = {
-        P3: 1,
-        setup(props) {
-          const name = inject("name");
-          console.log(name);
-          const age = inject("age", 30);
-          console.log(age);
-          return () => {
-            return h("div", [name.value, age]);
-          };
-        },
-      };
-      const P2 = {
-        P2: 1,
-        render() {
-          return h(P3);
-        },
-      };
-      const P1 = {
-        P1: 1,
-        setup(props) {
-          const name = ref("jw");
+      render(h(Teleport, { to: "#root" }, [123, "abc"]), app);
 
-          setTimeout(() => {
-            name.value = "handsome jw";
-          }, 1000);
-          provide("name", name);
-
-          return () => h(P2);
-        },
-      };
-      // 在父组件中提供数据，后代组件中获取数据
-      render(h(P1), app);
+      // setTimeout(() => {
+      //   render(null, app);
+      // }, 1000);
 
     </script>
   </body>
