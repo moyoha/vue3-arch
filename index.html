@@ -22,17 +22,88 @@
         onUpdated,
         onMounted,
         getCurrentInstance,
-        provide,
-        inject,
-        Teleport,
+        KeepAlive
       } from "./packages/runtime-dom/dist/runtime-dom.js";
 
 
-      render(h(Teleport, { to: "#root" }, [123, "abc"]), app);
+      let keepAliveProps = { max: 1 };
+      const A1 = {
+        a: "a1",
+        setup() {
+          onMounted(() => {
+            console.log("a1 mounted");
+          });
+          return () => {
+            return h("h1", "a1");
+          };
+        },
+      };
+      const A2 = {
+        a: "a2",
+        setup() {
+          onMounted(() => {
+            console.log("a2 mounted");
+          });
+          return () => {
+            return h("h1", "a2");
+          };
+        },
+      };
 
-      // setTimeout(() => {
-      //   render(null, app);
-      // }, 1000);
+      const A3 = {
+        a: "a3",
+        setup() {
+          onMounted(() => {
+            console.log("a3 mounted");
+          });
+          return () => {
+            return h("h1", "a3");
+          };
+        },
+      };
+
+      render(
+        h(KeepAlive, keepAliveProps, {
+          default: () => h(A1, { key: "a1" }),
+        }),
+        app
+      );
+
+      setTimeout(() => {
+        render(
+          h(KeepAlive, keepAliveProps, {
+            default: () => h(A2, { key: "a2" }),
+          }),
+          app
+        );
+      }, 1000);
+
+      setTimeout(() => {
+        render(
+          h(KeepAlive, keepAliveProps, {
+            default: () => h(A1, { key: "a1" }),
+          }),
+          app
+        );
+      }, 2000);
+
+      setTimeout(() => {
+        render(
+          h(KeepAlive, keepAliveProps, {
+            default: () => h(A3, { key: "a3" }),
+          }),
+          app
+        );
+      }, 3000);
+
+      setTimeout(() => {
+        render(
+          h(KeepAlive, keepAliveProps, {
+            default: () => h(A2, { key: "a2" }),
+          }),
+          app
+        );
+      }, 4000);
 
     </script>
   </body>
